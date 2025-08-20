@@ -19,11 +19,12 @@ jobs:
           dotnet-version: '9.x.x'
       - name: Publish
         run: |
-          dotnet publish src/Chronofoil.CLI/Chronofoil.CLI.csproj -c Release -r linux-x64 -p:PublishSingleFile=true --self-contained
-          dotnet publish src/Chronofoil.CLI/Chronofoil.CLI.csproj -c Release -r linux-arm64 -p:PublishSingleFile=true --self-contained
+          $ver = '${{ github.ref_name }}'
+          dotnet publish src/Chronofoil.CLI.csproj -c Release -r linux-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
+          dotnet publish src/Chronofoil.CLI.csproj -c Release -r linux-arm64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
           mkdir -p artifacts
-          mv src/Chronofoil.CLI/bin/Release/net9.0/linux-x64/publish/cfcli artifacts/cfcli-linux-x64
-          mv src/Chronofoil.CLI/bin/Release/net9.0/linux-arm64/publish/cfcli artifacts/cfcli-linux-arm64
+          mv src/Chronofoil.CLI/bin/Release/net9.0/linux-x64/publish/cfcli artifacts/cfcli-$ver--linux-x64
+          mv src/Chronofoil.CLI/bin/Release/net9.0/linux-arm64/publish/cfcli artifacts/cfcli-$ver-linux-arm64
       - uses: actions/upload-artifact@v4
         with:
           name: cfcli-linux
@@ -42,9 +43,10 @@ jobs:
           dotnet-version: '9.x.x'
       - name: Publish
         run: |
-          dotnet publish src/Chronofoil.CLI/Chronofoil.CLI.csproj -c Release -r win-x64 -p:PublishSingleFile=true --self-contained
+          $ver = '${{ github.ref_name }}'
+          dotnet publish src/Chronofoil.CLI.csproj -c Release -r win-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
           mkdir -p artifacts
-          move src\Chronofoil.CLI\bin\Release\net9.0\win-x64\publish\cfcli.exe artifacts\cfcli-win-x64.exe
+          move src\Chronofoil.CLI\bin\Release\net9.0\win-x64\publish\cfcli.exe artifacts\cfcli-$ver-win-x64.exe
       - uses: actions/upload-artifact@v4
         with:
           name: cfcli-windows
@@ -63,11 +65,12 @@ jobs:
           dotnet-version: '9.x.x'
       - name: Publish
         run: |
-          dotnet publish src/Chronofoil.CLI/Chronofoil.CLI.csproj -c Release -r osx-x64 -p:PublishSingleFile=true --self-contained
-          dotnet publish src/Chronofoil.CLI/Chronofoil.CLI.csproj -c Release -r osx-arm64 -p:PublishSingleFile=true --self-contained
+          $ver = '${{ github.ref_name }}'
+          dotnet publish src/Chronofoil.CLI.csproj -c Release -r osx-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
+          dotnet publish src/Chronofoil.CLI.csproj -c Release -r osx-arm64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
           mkdir -p artifacts
-          mv src/Chronofoil.CLI/bin/Release/net9.0/osx-x64/publish/cfcli artifacts/cfcli-mac-x64
-          mv src/Chronofoil.CLI/bin/Release/net9.0/osx-arm64/publish/cfcli artifacts/cfcli-mac-arm64
+          mv src/Chronofoil.CLI/bin/Release/net9.0/osx-x64/publish/cfcli artifacts/cfcli-$ver-mac-x64
+          mv src/Chronofoil.CLI/bin/Release/net9.0/osx-arm64/publish/cfcli artifacts/cfcli-$ver-mac-arm64
       - uses: actions/upload-artifact@v4
         with:
           name: cfcli-macos
@@ -87,4 +90,6 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          name: Chronofoil CLI v${{ github.ref_name }}
+          body: Automatic tag-based release for ${{ github.ref_name }}
           files: release-out/*

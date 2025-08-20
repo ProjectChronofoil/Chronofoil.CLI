@@ -15,4 +15,4 @@ jobs:
         with:
           dotnet-version: '9.x.x'
       - name: Build
-        run: dotnet build
+        run: dotnet build src/Chronofoil.CLI.sln
