@@ -6,9 +6,12 @@ on:
       - "*"
 
 jobs:
-  build-linux-x64:
-    name: Build on Linux
-    runs-on: ubuntu-latest
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,87 +22,35 @@ jobs:
           dotnet-version: '9.x.x'
       - name: Publish
         run: |
-          ver=${{ github.ref_name }}
-          dotnet publish src/Chronofoil.CLI.csproj -c Release -r linux-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
-          mkdir -p artifacts
-          mv src/bin/Release/net9.0/linux-x64/publish/cfcli artifacts/cfcli-$ver--linux-x64
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cfcli-linux-x64
-          path: artifacts/*
-          
-  build-linux-arm:
-    name: Build on Linux
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.x.x'
-      - name: Publish
-        run: |
-          ver=${{ github.ref_name }}
-          dotnet publish src/Chronofoil.CLI.csproj -c Release -r linux-arm64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
-          mkdir -p artifacts
-          mv src/bin/Release/net9.0/linux-arm64/publish/cfcli artifacts/cfcli-$ver-linux-arm64
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cfcli-linux
-          path: artifacts/*
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            ver=${{ github.ref_name }}
+            dotnet publish src/Chronofoil.CLI.csproj -c Release -r linux-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
+            mkdir -p artifacts
+            mv src/bin/Release/net9.0/linux-x64/publish/cfcli artifacts/cfcli-$ver-linux-x64
+          elif [ "${{ runner.os }}" == "Windows" ]; then
+            $ver = "${{ github.ref_name }}"
+            dotnet publish src/Chronofoil.CLI.csproj -c Release -r win-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
+            dotnet publish src/Chronofoil.CLI.csproj -c Release -r win-arm64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
+            mkdir -p artifacts
+            move src/bin/Release/net9.0/win-x64/publish/cfcli.exe artifacts/cfcli-$ver-win-x64.exe
+            move src/bin/Release/net9.0/win-arm64/publish/cfcli.exe artifacts/cfcli-$ver-win-arm64.exe
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            ver=${{ github.ref_name }}
+            dotnet publish src/Chronofoil.CLI.csproj -c Release -r osx-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
+            dotnet publish src/Chronofoil.CLI.csproj -c Release -r osx-arm64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
+            mkdir -p artifacts
+            mv src/bin/Release/net9.0/osx-x64/publish/cfcli artifacts/cfcli-$ver-mac-x64
+            mv src/bin/Release/net9.0/osx-arm64/publish/cfcli artifacts/cfcli-$ver-mac-arm64
+          fi
+        shell: bash
 
-  build-windows:
-    name: Build on Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.x.x'
-      - name: Publish
-        run: |
-          $ver = '${{ github.ref_name }}'
-          dotnet publish src/Chronofoil.CLI.csproj -c Release -r win-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
-          dotnet publish src/Chronofoil.CLI.csproj -c Release -r win-arm64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
-          mkdir -p artifacts
-          move src\bin\Release\net9.0\win-x64\publish\cfcli.exe artifacts\cfcli-$ver-win-x64.exe
-          move src\bin\Release\net9.0\win-arm64\publish\cfcli.exe artifacts\cfcli-$ver-win-arm64.exe
       - uses: actions/upload-artifact@v4
         with:
-          name: cfcli-windows
-          path: artifacts/*
-
-  build-macos:
-    name: Build on macOS
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.x.x'
-      - name: Publish
-        run: |
-          ver=${{ github.ref_name }}
-          dotnet publish src/Chronofoil.CLI.csproj -c Release -r osx-x64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
-          dotnet publish src/Chronofoil.CLI.csproj -c Release -r osx-arm64 -p:PublishSingleFile=true -p:Version=$ver --self-contained
-          mkdir -p artifacts
-          mv src/bin/Release/net9.0/osx-x64/publish/cfcli artifacts/cfcli-$ver-mac-x64
-          mv src/bin/Release/net9.0/osx-arm64/publish/cfcli artifacts/cfcli-$ver-mac-arm64
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cfcli-macos
+          name: cfcli-${{ runner.os }}
           path: artifacts/*
 
   release:
-    needs: [build-linux-x64, build-linux-arm, build-windows, build-macos]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
