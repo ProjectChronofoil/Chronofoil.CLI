@@ -99,7 +99,7 @@ jobs:
           path: artifacts/*
 
   release:
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-linux-x64, build-linux-arm, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
