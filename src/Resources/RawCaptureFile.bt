@@ -1,0 +1,97 @@
+// chronofoil raw capture file
+
+enum <byte> Protocol
+{
+    Protocol_None = 0,
+    Zone = 1,
+    Chat = 2,
+    Lobby = 3,
+};
+
+enum <byte> Direction
+{
+    Direction_None = 0,
+    Rx = 1,
+    Tx = 2,
+};
+
+struct PacketHeader
+{
+    uint size;
+    uint src;
+    uint dst;
+    ushort type;
+    ushort pad;
+};
+
+struct IpcHeader
+{
+    ushort unknown1;
+    ushort type; // opcode
+    ushort padding1;
+    ushort serverId;
+    uint timestamp;
+    uint padding2;
+};
+
+struct Packet
+{
+    PacketHeader packetHeader;
+
+    local int dataSize = packetHeader.size - 16;
+    
+    if (packetHeader.type == 3) {
+        IpcHeader ipcHeader;
+        dataSize -= 16;
+    }
+
+    if (dataSize > 0)
+        byte data[dataSize];
+};
+
+
+string GetCommentPacket(Packet& packet) {
+    if (packet.packetHeader.type != 3)
+        return Str("%d", packet.packetHeader.type);
+    else if (packet.packetHeader.type == 3)
+        return "3 " + Str("%d", packet.ipcHeader.type);
+}
+
+struct Frame
+{
+    byte prefix[16];
+    int64 time;
+    uint size;
+    ushort proto;
+    ushort count;
+    byte version;
+    byte compression;
+    ushort unknown;
+    uint decompressedLength;
+    
+    local int i = 0;
+    for (i = 0; i < count; i++)
+        Packet packets <comment=GetCommentPacket>;
+};
+
+struct CaptureFrameHeader
+{
+    Protocol protocol;
+    Direction direction;
+};
+
+struct CaptureFrame
+{
+    CaptureFrameHeader header;
+    Frame data;
+};
+
+
+string GetCommentCaptureFrame(CaptureFrame& frame) {
+    return EnumToString(frame.header.protocol) + " " + EnumToString(frame.header.direction);
+}
+
+while (!FEof()) 
+{
+    CaptureFrame frames <comment=GetCommentCaptureFrame>;
+}
