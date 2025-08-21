@@ -58,7 +58,7 @@ Commands for working with ProtoLifestream capture files (`.dat`).
 #### `update`
 
 Converts a `.dat` file to a `.cfcap` file. Since this capture format did not stop on logout, this command may produce
-multiple capture files per `.dat` file. Please be *absolutely certain* that you do not store run this command on the
+multiple capture files per `.dat` file. Please be *absolutely certain* that you do not run this command on the
 same capture file multiple times, as this will generate duplicate output captures with different capture IDs.
 
 **Options:**
