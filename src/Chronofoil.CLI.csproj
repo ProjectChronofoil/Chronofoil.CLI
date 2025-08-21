@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <AssemblyName>cfcli</AssemblyName>
+        <PublishTrimmed>true</PublishTrimmed>
+        <PublishAot>true</PublishAot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\deps\Chronofoil.CaptureFile\src\Chronofoil.CaptureFile.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DotMake.CommandLine" Version="2.6.7" />
+      <PackageReference Include="System.CommandLine" Version="2.0.0-beta6.25358.103" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\raw_capture_file.ksy" />
+        <EmbeddedResource Include="Resources\RawCaptureFile.bt" />
+        <EmbeddedResource Include="Resources\RawCaptureFile.hexpat" />
+    </ItemGroup>
+
+</Project>

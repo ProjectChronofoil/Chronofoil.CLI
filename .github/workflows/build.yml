@@ -1,0 +1,18 @@
+name: Build Chronofoil.CLI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x.x'
+      - name: Build
+        run: dotnet build src/Chronofoil.CLI.sln

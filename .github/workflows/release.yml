@@ -1,0 +1,78 @@
+name: Release Chronofoil.CLI
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            targets: "linux-x64"
+          - os: windows-latest
+            platform: windows
+            targets: "win-x64 win-arm64"
+          - os: macos-latest
+            platform: macos
+            targets: "osx-x64 osx-arm64"
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x.x'
+      - name: Build and Package
+        run: |
+          $ver = "${{ github.ref_name }}"        
+          mkdir -p artifacts
+          
+          $targets = "${{ matrix.targets }}" -split " "
+          
+          foreach ($target in $targets) {
+            dotnet publish src/Chronofoil.CLI.csproj -c Release -r $target -p:PublishSingleFile=true -p:Version=$ver --self-contained
+            $publishDir = "src/bin/Release/net9.0/$target/publish"
+          
+            if ("${{ matrix.platform }}" -eq "windows") {
+              $sourceFile = "$publishDir/cfcli.exe"
+              $destFile = "artifacts/cfcli-$ver-$($target.Replace('win-', 'win-')).exe"
+            } else {
+              $sourceFile = "$publishDir/cfcli"
+              if ("${{ matrix.platform }}" -eq "macos") {
+                $destFile = "artifacts/cfcli-$ver-$($target.Replace('osx-', 'mac-'))"
+              } else {
+                $destFile = "artifacts/cfcli-$ver-$target"
+              }
+            }
+          
+            mv $sourceFile $destFile
+          }
+        shell: pwsh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cfcli-${{ matrix.platform }}
+          path: artifacts/*
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-out
+          pattern: cfcli-*
+          merge-multiple: true
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Chronofoil CLI v${{ github.ref_name }}
+          body: Automatic tag-based release for ${{ github.ref_name }}
+          files: release-out/*
