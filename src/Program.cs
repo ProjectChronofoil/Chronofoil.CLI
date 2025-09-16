@@ -5,6 +5,7 @@ using DotMake.CommandLine;
 using Chronofoil.CaptureFile;
 using Chronofoil.CaptureFile.Binary.Capture;
 using Chronofoil.CaptureFile.Binary.Packet;
+using Chronofoil.CaptureFile.Censor;
 using Chronofoil.CaptureFile.Generated;
 using Chronofoil.CLI.ProtoLifestream;
 using Google.Protobuf;
@@ -238,6 +239,42 @@ public class PlUpdateCommand
                 converter.ConvertCapture(file);
             }
         }
+    }
+}
+
+[CliCommand(Alias = "censor", Description = "Censor a cfcap file.", Parent = typeof(ChronofoilCommand))]
+public class CfCensorCommand
+{
+    [CliOption(Name = "file", Description = "Input cfcap file path")]
+    public string InputFile { get; set; } = "";
+
+    public async Task RunAsync()
+    {
+        var fileSet = InputFile != "";
+
+        if (!fileSet)
+        {
+            await Console.Error.WriteLineAsync("--file must be specified.");
+            return;
+        }
+
+        var fileExists = File.Exists(InputFile);
+
+        if (fileSet && !fileExists)
+        {
+            await Console.Error.WriteLineAsync($"Input file '{InputFile}' does not exist.");
+            return;
+        }
+
+        var input = new FileInfo(InputFile);
+
+        var outputPath = input.FullName.Replace(".cfcap", ".ccfcap");
+        var output = new FileInfo(outputPath);
+
+        Console.WriteLine($"Censoring Chronofoil capture file '{input.FullName}' and saving to '{output.FullName}'");
+
+        var redactor = new CaptureRedactor(input.FullName, CensorRegistry.CensorTargets.Values.ToList());
+        redactor.Censor();
     }
 }
 
