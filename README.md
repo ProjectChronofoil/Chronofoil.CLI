@@ -51,6 +51,22 @@ Generates a template file for the raw capture format, for use with hex editors.
 *   `cfcli.exe cf template --kaitai "my_template.ksy"`
 *   `cfcli.exe cf template --010editor "my_template.bt"`
 
+#### `censor`
+
+Converts a `.cfcap` file to a `.ccfcap` file, removing some sensitive information.
+
+**Options:**
+
+*   `--capture <file>`: Path to a single capture file.
+*   `--directory <path>`: Path to a directory containing multiple capture files.
+*   `-o`: Overwrite existing `ccfcap` files. Without this flag, `cfcap` files that have an existing `ccfcap` in the same directory will be skipped.
+*   `-i`: Ignore and continue if an issue occurs with obtaining opcodes from the Chronofoil API.
+
+**Examples:**
+
+*   `cfcli.exe cf censor --capture "C:\captures\my_capture.cfcap"`
+*   `cfcli.exe cf censor --directory "C:\captures"`
+
 ### ProtoLifestream Commands (`pl`)
 
 Commands for working with ProtoLifestream capture files (`.dat`).
