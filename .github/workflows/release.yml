@@ -29,7 +29,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x.x'
+          dotnet-version: '10.x.x'
       - name: Build and Package
         run: |
           $ver = "${{ github.ref_name }}"        
@@ -39,7 +39,7 @@ jobs:
           
           foreach ($target in $targets) {
             dotnet publish src/Chronofoil.CLI.csproj -c Release -r $target -p:PublishSingleFile=true -p:Version=$ver --self-contained
-            $publishDir = "src/bin/Release/net9.0/$target/publish"
+            $publishDir = "src/bin/Release/net10.0/$target/publish"
           
             if ("${{ matrix.platform }}" -eq "windows") {
               $sourceFile = "$publishDir/cfcli.exe"
